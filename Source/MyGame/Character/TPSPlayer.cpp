@@ -68,6 +68,7 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	if (PlayerInput)
 	{		
 		PlayerInput->BindAction(ia_LookUp, ETriggerEvent::Triggered, this, &ATPSPlayer::Input_Look);
+		PlayerInput->BindAction(ia_Move, ETriggerEvent::Triggered, this, &ATPSPlayer::Move);
 	}
 
 }
@@ -84,6 +85,27 @@ void ATPSPlayer::Input_Look(const FInputActionValue& inputValue)
 	if (Value.Y != 0.0f)
 	{
 		AddControllerPitchInput(Value.Y);
+	}
+}
+
+void ATPSPlayer::Move(const FInputActionValue& inputValue)
+{
+	if (Controller)
+	{
+		const FVector2D Value = inputValue.Get<FVector2D>();
+		const FRotator MovementRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
+
+		if (Value.X != 0.0f)
+		{
+			const FVector MovementDirection = MovementRotation.RotateVector(FVector::RightVector);
+			AddMovementInput(MovementDirection, Value.X);
+		}
+
+		if (Value.Y != 0.0f)
+		{
+			const FVector MovementDirection = MovementRotation.RotateVector(FVector::ForwardVector);
+			AddMovementInput(MovementDirection, Value.Y);
+		}
 	}
 }
 

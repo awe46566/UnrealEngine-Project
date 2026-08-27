@@ -39,4 +39,13 @@ public:
 	class UInputAction* ia_LookUp;
 
 	void Input_Look(const struct FInputActionValue& inputValue);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* ia_Move;
+
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	float walkSpeed = 600;
+	FVector direction;
+
+	void Move(const struct FInputActionValue& inputValue);
 };
