@@ -26,4 +26,20 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
+	UPROPERTY(VisibleAnywhere, Category=Camera)
+	class USpringArmComponent* springArmComp;
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	class UCameraComponent* tpsCamComp;
+	
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputMappingContext* imc_TPS;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* ia_LookUp;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* ia_Trun;
+
+	void Turn(const struct FInputActionValue& inputValue);
+	void LookUp(const struct FInputActionValue& inputValue);
 };
