@@ -14,7 +14,7 @@ public:
 	// Sets default values for this actor's properties
 	AMyActor();
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere)	
 	int32 Hp = 777;
 
 protected:

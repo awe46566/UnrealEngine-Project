@@ -4,4 +4,11 @@
 
 #include "CoreMinimal.h"
 
-// 필수 규칙 generatied 헤더는 반드시 include 중 가장 아래 선언 되어야 한다.
+DECLARE_LOG_CATEGORY_EXTERN(TPS, Log, All);
+
+#define CALLINFO (FString(__FUNCTION__) + TEXT("(") + FString::FromInt(__LINE__) + TEXT(")"))
+
+#define PRINT_CALLINFO() UE_LOG(TPS, Warning, TEXT("%s"), *CALLINFO)
+
+#define PRINT_LOG(fmt, ...) UE_LOG(TPS, Warning, TEXT("%s %s"), *CALLINFO, \
+*FString::Printf(fmt, ##__VA_ARGS__))
