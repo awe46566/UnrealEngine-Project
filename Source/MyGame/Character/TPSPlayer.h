@@ -37,9 +37,6 @@ public:
 	class UInputMappingContext* imc_TPS;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* ia_LookUp;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	class UInputAction* ia_Trun;
 
-	void Turn(const struct FInputActionValue& inputValue);
-	void LookUp(const struct FInputActionValue& inputValue);
+	void Input_Look(const struct FInputActionValue& inputValue);
 };

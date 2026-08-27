@@ -66,23 +66,26 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 	auto PlayerInput = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 	if (PlayerInput)
-	{
-		PlayerInput->BindAction(ia_Trun, ETriggerEvent::Triggered, this, &ATPSPlayer::Turn);
-		PlayerInput->BindAction(ia_LookUp, ETriggerEvent::Triggered, this, &ATPSPlayer::LookUp);
+	{		
+		PlayerInput->BindAction(ia_LookUp, ETriggerEvent::Triggered, this, &ATPSPlayer::Input_Look);
 	}
 
 }
 
-void ATPSPlayer::Turn(const FInputActionValue& inputValue)
+void ATPSPlayer::Input_Look(const FInputActionValue& inputValue)
 {
-	float value = inputValue.Get<float>();
-	AddControllerYawInput(value);
+	const FVector2D Value = inputValue.Get<FVector2D>();
+
+	if (Value.X != 0.0f)
+	{
+		AddControllerYawInput(Value.X);
+	}
+
+	if (Value.Y != 0.0f)
+	{
+		AddControllerPitchInput(Value.Y);
+	}
 }
 
-void ATPSPlayer::LookUp(const FInputActionValue& inputValue)
-{
-	float value = inputValue.Get<float>();
-	AddControllerPitchInput(value);
-}
 
 
