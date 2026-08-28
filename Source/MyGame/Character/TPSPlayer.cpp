@@ -9,6 +9,8 @@
 #include "InputActionValue.h"
 #include "Actor/Bullet.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
 
 
 // Sets default values
@@ -150,8 +152,32 @@ void ATPSPlayer::InputJump(const FInputActionValue& inputValue)
 
 void ATPSPlayer::InputFire(const FInputActionValue& inputValue)
 {
-	FTransform firePosition = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
-	GetWorld()->SpawnActor<ABullet>(bulletFactory, firePosition);
+	if (!bUsingSniperGun)
+	{
+		FTransform firePosition = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
+		GetWorld()->SpawnActor<ABullet>(bulletFactory, firePosition);
+	}
+	else
+	{
+		FVector startPos = tpsCamComp->GetComponentLocation();
+		FVector endPos = tpsCamComp->GetComponentLocation() + tpsCamComp->GetForwardVector() * 5000;
+
+		FHitResult hitInfo;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+
+		bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, params);
+
+		if (bHit)
+		{
+			FTransform bulletTrans;
+			bulletTrans.SetLocation(hitInfo.ImpactPoint);
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+				this,
+				BulletEffectFactory,
+				hitInfo.ImpactPoint);
+		}
+	}
 }
 
 void ATPSPlayer::ChangeToGun(const FInputActionValue& inputValue)
@@ -180,6 +206,7 @@ void ATPSPlayer::SniperAim(const FInputActionValue& inputValue)
 		bSniperAim = true;
 		_sniperUI->AddToViewport();
 		tpsCamComp->SetFieldOfView(30.0f);
+		
 	}
 	else
 	{

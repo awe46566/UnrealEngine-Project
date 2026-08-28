@@ -66,6 +66,8 @@ public:
 	TSubclassOf<class UUserWidget> sniperUIFactory;
 	UPROPERTY()
 	class UUserWidget* _sniperUI;
+	UPROPERTY(EditAnywhere, Category = BulletEffect)
+	TObjectPtr<class UNiagaraSystem> BulletEffectFactory;
 
 	void Input_Look(const struct FInputActionValue& inputValue);
 	void Move(const struct FInputActionValue& inputValue);
