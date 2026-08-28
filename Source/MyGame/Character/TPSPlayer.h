@@ -42,10 +42,18 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* ia_Move;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* ia_Jump;
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	float walkSpeed = 600;
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	FVector direction;
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	FVector hideDiretion;
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	float jumpForce;
 
 	void Move(const struct FInputActionValue& inputValue);
+	void InputJump(const struct FInputActionValue& inputValue);
 };

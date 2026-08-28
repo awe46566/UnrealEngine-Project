@@ -25,6 +25,7 @@ ATPSPlayer::ATPSPlayer()
 	springArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	springArmComp->SetupAttachment(RootComponent);
 	springArmComp->SetRelativeLocation(FVector(0, 70, 90));
+	//springArmComp->SocketOffset(FVector(0, 70, 90));
 	springArmComp->TargetArmLength = 400;
 	springArmComp->bUsePawnControlRotation = true;
 
@@ -33,6 +34,8 @@ ATPSPlayer::ATPSPlayer()
 	tpsCamComp->bUsePawnControlRotation = false;
 
 	bUseControllerRotationYaw = true;
+
+	JumpMaxCount = 2;
 }
 
 // Called when the game starts or when spawned
@@ -57,6 +60,16 @@ void ATPSPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// 카메라 거리, 캐릭터 거리 비교
+	FVector DistVector = tpsCamComp->GetComponentLocation() - GetActorLocation();
+	if (DistVector.Distance > hideDiretion.Distance)
+	{
+		GetMesh()->SetVisibility(false);
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+	}
 }
 
 // Called to bind functionality to input
@@ -69,6 +82,7 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	{		
 		PlayerInput->BindAction(ia_LookUp, ETriggerEvent::Triggered, this, &ATPSPlayer::Input_Look);
 		PlayerInput->BindAction(ia_Move, ETriggerEvent::Triggered, this, &ATPSPlayer::Move);
+		PlayerInput->BindAction(ia_Jump, ETriggerEvent::Started, this, &ATPSPlayer::InputJump);
 	}
 
 }
@@ -107,6 +121,11 @@ void ATPSPlayer::Move(const FInputActionValue& inputValue)
 			AddMovementInput(MovementDirection, Value.Y);
 		}
 	}
+}
+
+void ATPSPlayer::InputJump(const FInputActionValue& inputValue)
+{
+	Jump();
 }
 
 
