@@ -176,6 +176,15 @@ void ATPSPlayer::InputFire(const FInputActionValue& inputValue)
 				this,
 				BulletEffectFactory,
 				hitInfo.ImpactPoint);
+
+			auto hitComp = hitInfo.GetComponent();
+
+			if (hitComp && hitComp->IsSimulatingPhysics())
+			{
+				FVector dir = (endPos - startPos).GetSafeNormal();
+				FVector force = dir * hitComp->GetMass() * 500000;
+				hitComp->AddForceAtLocation(force, hitInfo.ImpactPoint);
+			}
 		}
 	}
 }
