@@ -29,7 +29,7 @@ public:
 public:
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	class USpringArmComponent* springArmComp;
-	UPROPERTY(VisibleAnywhere, Category = Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class UCameraComponent* tpsCamComp;
 	
 public:
@@ -43,18 +43,34 @@ public:
 	class UInputAction* ia_Jump;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* ia_Fire;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* ia_Change;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* ia_Sniper;
+
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	float walkSpeed = 600;
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	FVector direction;
+
 	UPROPERTY(VisibleAnywhere, Category = GunMesh)
 	class USkeletalMeshComponent* gunMeshComp;
+	UPROPERTY(VisibleAnywhere, Category = GunMesh)
+	class USkeletalMeshComponent* sniperGunComp;
 	UPROPERTY(EditDefaultsOnly, Category = BulletFactory)
 	TSubclassOf<class ABullet> bulletFactory;
+	bool bUsingSniperGun = false;
+	bool bSniperAim = false;
+	UPROPERTY(EditDefaultsOnly, Category = SniperUI)
+	TSubclassOf<class UUserWidget> sniperUIFactory;
+	UPROPERTY()
+	class UUserWidget* _sniperUI;
 
 	void Input_Look(const struct FInputActionValue& inputValue);
 	void Move(const struct FInputActionValue& inputValue);
 	void InputJump(const struct FInputActionValue& inputValue);
 	void InputFire(const struct FInputActionValue& inputValue);
+	void ChangeToGun(const struct FInputActionValue& inputValue);
+	void SniperAim(const struct FInputActionValue& inputValue);
 };

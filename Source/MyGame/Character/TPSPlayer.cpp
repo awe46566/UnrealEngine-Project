@@ -8,6 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "Actor/Bullet.h"
+#include "Blueprint/UserWidget.h"
 
 
 // Sets default values
@@ -47,6 +48,16 @@ ATPSPlayer::ATPSPlayer()
 		gunMeshComp->SetSkeletalMesh(TempGunMesh.Object);
 		gunMeshComp->SetRelativeLocation(FVector(-14, 11, 138));
 	}
+
+	sniperGunComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SniperGunComp"));
+	sniperGunComp->SetupAttachment(GetMesh());
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempSniperMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Assets/MilitaryWeapSilver/Weapons/Sniper_Rifle_A.Sniper_Rifle_A'"));
+	
+	if (TempSniperMesh.Succeeded())
+	{
+		sniperGunComp->SetSkeletalMesh(TempSniperMesh.Object);
+		sniperGunComp->SetRelativeLocation(FVector(-22, 31, 128));
+	}
 }
 
 // Called when the game starts or when spawned
@@ -63,7 +74,10 @@ void ATPSPlayer::BeginPlay()
 			subsystem->AddMappingContext(imc_TPS, 0);
 		}
 	}
-	
+
+	_sniperUI = CreateWidget(GetWorld(), sniperUIFactory);
+
+	sniperGunComp->SetVisibility(false);
 }
 
 // Called every frame
@@ -86,6 +100,9 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		PlayerInput->BindAction(ia_Move, ETriggerEvent::Triggered, this, &ATPSPlayer::Move);
 		PlayerInput->BindAction(ia_Jump, ETriggerEvent::Started, this, &ATPSPlayer::InputJump);
 		PlayerInput->BindAction(ia_Fire, ETriggerEvent::Started, this, &ATPSPlayer::InputFire);
+		PlayerInput->BindAction(ia_Change, ETriggerEvent::Started, this, &ATPSPlayer::ChangeToGun);
+		PlayerInput->BindAction(ia_Sniper, ETriggerEvent::Started, this, &ATPSPlayer::SniperAim);
+		PlayerInput->BindAction(ia_Sniper, ETriggerEvent::Completed, this, &ATPSPlayer::SniperAim);
 	}
 
 }
@@ -135,6 +152,41 @@ void ATPSPlayer::InputFire(const FInputActionValue& inputValue)
 {
 	FTransform firePosition = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
 	GetWorld()->SpawnActor<ABullet>(bulletFactory, firePosition);
+}
+
+void ATPSPlayer::ChangeToGun(const FInputActionValue& inputValue)
+{
+	if (!bUsingSniperGun)
+	{
+		bUsingSniperGun = true;
+		sniperGunComp->SetVisibility(true);
+		gunMeshComp->SetVisibility(false);
+	}
+	else
+	{
+		bUsingSniperGun = false;
+		sniperGunComp->SetVisibility(false);
+		gunMeshComp->SetVisibility(true);
+	}
+}
+
+void ATPSPlayer::SniperAim(const FInputActionValue& inputValue)
+{
+	if (!bUsingSniperGun)
+		return;
+
+	if (bSniperAim == false)
+	{
+		bSniperAim = true;
+		_sniperUI->AddToViewport();
+		tpsCamComp->SetFieldOfView(30.0f);
+	}
+	else
+	{
+		bSniperAim = false;
+		_sniperUI->RemoveFromParent();
+		tpsCamComp->SetFieldOfView(90.0f);
+	}
 }
 
 
