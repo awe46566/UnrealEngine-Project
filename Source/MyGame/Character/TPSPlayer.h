@@ -36,24 +36,25 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputMappingContext* imc_TPS;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	class UInputAction* ia_LookUp;
-
-	void Input_Look(const struct FInputActionValue& inputValue);
-
+	class UInputAction* ia_LookUp;	
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* ia_Move;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* ia_Jump;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* ia_Fire;
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	float walkSpeed = 600;
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	FVector direction;
-	UPROPERTY(EditAnywhere, Category = PlayerSetting)
-	FVector hideDiretion;
-	UPROPERTY(EditAnywhere, Category = PlayerSetting)
-	float jumpForce;
+	UPROPERTY(VisibleAnywhere, Category = GunMesh)
+	class USkeletalMeshComponent* gunMeshComp;
+	UPROPERTY(EditDefaultsOnly, Category = BulletFactory)
+	TSubclassOf<class ABullet> bulletFactory;
 
+	void Input_Look(const struct FInputActionValue& inputValue);
 	void Move(const struct FInputActionValue& inputValue);
 	void InputJump(const struct FInputActionValue& inputValue);
+	void InputFire(const struct FInputActionValue& inputValue);
 };

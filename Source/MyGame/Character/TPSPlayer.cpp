@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
+#include "Actor/Bullet.h"
 
 
 // Sets default values
@@ -36,6 +37,16 @@ ATPSPlayer::ATPSPlayer()
 	bUseControllerRotationYaw = true;
 
 	JumpMaxCount = 2;
+
+	gunMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMeshComp"));
+	gunMeshComp->SetupAttachment(GetMesh());
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempGunMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Assets/MilitaryWeapSilver/Weapons/Assault_Rifle_A.Assault_Rifle_A'"));
+
+	if (TempGunMesh.Succeeded())
+	{
+		gunMeshComp->SetSkeletalMesh(TempGunMesh.Object);
+		gunMeshComp->SetRelativeLocation(FVector(-14, 11, 138));
+	}
 }
 
 // Called when the game starts or when spawned
@@ -61,15 +72,6 @@ void ATPSPlayer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// 카메라 거리, 캐릭터 거리 비교
-	FVector DistVector = tpsCamComp->GetComponentLocation() - GetActorLocation();
-	if (DistVector.Distance > hideDiretion.Distance)
-	{
-		GetMesh()->SetVisibility(false);
-	}
-	else
-	{
-		GetMesh()->SetVisibility(true);
-	}
 }
 
 // Called to bind functionality to input
@@ -83,6 +85,7 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		PlayerInput->BindAction(ia_LookUp, ETriggerEvent::Triggered, this, &ATPSPlayer::Input_Look);
 		PlayerInput->BindAction(ia_Move, ETriggerEvent::Triggered, this, &ATPSPlayer::Move);
 		PlayerInput->BindAction(ia_Jump, ETriggerEvent::Started, this, &ATPSPlayer::InputJump);
+		PlayerInput->BindAction(ia_Fire, ETriggerEvent::Started, this, &ATPSPlayer::InputFire);
 	}
 
 }
@@ -126,6 +129,12 @@ void ATPSPlayer::Move(const FInputActionValue& inputValue)
 void ATPSPlayer::InputJump(const FInputActionValue& inputValue)
 {
 	Jump();
+}
+
+void ATPSPlayer::InputFire(const FInputActionValue& inputValue)
+{
+	FTransform firePosition = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
+	GetWorld()->SpawnActor<ABullet>(bulletFactory, firePosition);
 }
 
 
