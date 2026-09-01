@@ -11,7 +11,9 @@
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
+#include "System/EnemyFSM.h"
 
+#define WEAPON_TRACE  ECC_GameTraceChannel2
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -152,9 +154,14 @@ void ATPSPlayer::InputJump(const FInputActionValue& inputValue)
 
 void ATPSPlayer::InputFire(const FInputActionValue& inputValue)
 {
+	// TSubclassOf : 에디터에서 생성한 블루프린트 클래스와 대응하는 C++ 클래스 타입이 없다.
+	// 블루프린트 클래스를 담는 용도로 사용.
+	// CDO ( 어떤 클래스인지 틀만 정의 )
+	// UClass는 모든 CDO를 보여줘서 불편하고 위험하다. 안전하게 Bullet으로 파생된 클래스만 할당하려면 TSubclassOf
 	if (!bUsingSniperGun)
 	{
 		FTransform firePosition = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
+		// UClass* 는 기본객체 = CDO
 		GetWorld()->SpawnActor<ABullet>(bulletFactory, firePosition);
 	}
 	else
@@ -166,7 +173,7 @@ void ATPSPlayer::InputFire(const FInputActionValue& inputValue)
 		FCollisionQueryParams params;
 		params.AddIgnoredActor(this);
 
-		bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, params);
+		bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, WEAPON_TRACE, params);
 
 		if (bHit)
 		{
@@ -184,6 +191,13 @@ void ATPSPlayer::InputFire(const FInputActionValue& inputValue)
 				FVector dir = (endPos - startPos).GetSafeNormal();
 				FVector force = dir * hitComp->GetMass() * 500000;
 				hitComp->AddForceAtLocation(force, hitInfo.ImpactPoint);
+			}
+
+			auto enemy = hitInfo.GetActor()->GetDefaultSubobjectByName(TEXT("FSM"));
+			if (enemy)
+			{
+				auto enemyFSM = Cast<UEnemyFSM>(enemy);
+				enemyFSM->OnDamageProcess();
 			}
 		}
 	}

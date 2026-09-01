@@ -41,11 +41,22 @@ void ABullet::BeginPlay()
 	
 	FTimerHandle deathTimer;
 	//GetWorld()->GetTimerManager().SetTimer(deathTimer, this, &ABullet::Die, 2.0f, false);
+
+	// 람다 사용시, 포인터를 캡처할때는 주의해야한다.
+	// 타이머가 울려서 람다가 실행될때, 포인터가 소멸할수도 있다.
+	// TObjectPtr<> // 일반적인 포인터
+	// 
+	// 수정방법 1)
+	TWeakObjectPtr<ABullet> WeakBullet = this;
+
 	GetWorld()->GetTimerManager().SetTimer(deathTimer,
 		FTimerDelegate::CreateLambda([this]()->void
 			{
-				Destroy();
+				Destroy();		
 			}), 2.0f, false);
+
+	// 수정방법 2)
+	// this 캡처 그대로 사용하고 싶다면, Bullet 삭제될때 TimeManager 에 타이머도 함께 제거
 }
 
 // Called every frame
