@@ -57,7 +57,7 @@ public:
 	float attackRange = 150.0f;
 
 	UPROPERTY(EditAnywhere, Category = FSM)
-	float attackDelayTime = 2.0f;
+	float attackDelayTime = 3.0f;
 
 	void OnDamageProcess();
 
@@ -69,4 +69,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = FSM)
 	float dieSpeed = 50.0f;
+
+	UPROPERTY()
+	class UEnemyAnim* anim;
 };

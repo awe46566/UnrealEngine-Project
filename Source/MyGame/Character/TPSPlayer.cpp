@@ -12,6 +12,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 #include "System/EnemyFSM.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Anim/PlayerAnim.h"
 
 #define WEAPON_TRACE  ECC_GameTraceChannel2
 
@@ -44,23 +46,30 @@ ATPSPlayer::ATPSPlayer()
 	JumpMaxCount = 2;
 
 	gunMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMeshComp"));
-	gunMeshComp->SetupAttachment(GetMesh());
+	gunMeshComp->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempGunMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Assets/MilitaryWeapSilver/Weapons/Assault_Rifle_A.Assault_Rifle_A'"));
 
 	if (TempGunMesh.Succeeded())
 	{
 		gunMeshComp->SetSkeletalMesh(TempGunMesh.Object);
-		gunMeshComp->SetRelativeLocation(FVector(-14, 11, 138));
+		//gunMeshComp->SetRelativeLocation(FVector(-14, 11, 138));
 	}
 
 	sniperGunComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SniperGunComp"));
-	sniperGunComp->SetupAttachment(GetMesh());
+	sniperGunComp->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempSniperMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Assets/MilitaryWeapSilver/Weapons/Sniper_Rifle_A.Sniper_Rifle_A'"));
 	
 	if (TempSniperMesh.Succeeded())
 	{
 		sniperGunComp->SetSkeletalMesh(TempSniperMesh.Object);
-		sniperGunComp->SetRelativeLocation(FVector(-22, 31, 128));
+		//sniperGunComp->SetRelativeLocation(FVector(-22, 31, 128));
+	}
+
+	ConstructorHelpers::FObjectFinder<USoundBase> tempSound(TEXT("/Script/Engine.SoundCue'/Game/Assets/MilitaryWeapSilver/Sound/Rifle/Cues/RifleA_Fire_Cue.RifleA_Fire_Cue'"));
+	
+	if (tempSound.Succeeded())
+	{
+		bulletSound = tempSound.Object;
 	}
 }
 
@@ -68,6 +77,8 @@ ATPSPlayer::ATPSPlayer()
 void ATPSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GetCharacterMovement()->MaxWalkSpeed = walkSpeed;
 
 	auto pc = Cast<APlayerController>(Controller);
 	if (pc)
@@ -103,6 +114,8 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		PlayerInput->BindAction(ia_LookUp, ETriggerEvent::Triggered, this, &ATPSPlayer::Input_Look);
 		PlayerInput->BindAction(ia_Move, ETriggerEvent::Triggered, this, &ATPSPlayer::Move);
 		PlayerInput->BindAction(ia_Jump, ETriggerEvent::Started, this, &ATPSPlayer::InputJump);
+		PlayerInput->BindAction(ia_Run, ETriggerEvent::Started, this, &ATPSPlayer::InputRun);
+		PlayerInput->BindAction(ia_Run, ETriggerEvent::Completed, this, &ATPSPlayer::InputRun);
 		PlayerInput->BindAction(ia_Fire, ETriggerEvent::Started, this, &ATPSPlayer::InputFire);
 		PlayerInput->BindAction(ia_Change, ETriggerEvent::Started, this, &ATPSPlayer::ChangeToGun);
 		PlayerInput->BindAction(ia_Sniper, ETriggerEvent::Started, this, &ATPSPlayer::SniperAim);
@@ -152,12 +165,46 @@ void ATPSPlayer::InputJump(const FInputActionValue& inputValue)
 	Jump();
 }
 
+void ATPSPlayer::InputRun(const FInputActionValue& inputValue)
+{
+	auto movement = GetCharacterMovement();
+
+	if (movement->MaxWalkSpeed > walkSpeed)
+	{
+		movement->MaxWalkSpeed = walkSpeed;
+	}
+	else
+	{
+		movement->MaxWalkSpeed = runSpeed;
+	}
+}
+
 void ATPSPlayer::InputFire(const FInputActionValue& inputValue)
 {
 	// TSubclassOf : 에디터에서 생성한 블루프린트 클래스와 대응하는 C++ 클래스 타입이 없다.
 	// 블루프린트 클래스를 담는 용도로 사용.
 	// CDO ( 어떤 클래스인지 틀만 정의 )
 	// UClass는 모든 CDO를 보여줘서 불편하고 위험하다. 안전하게 Bullet으로 파생된 클래스만 할당하려면 TSubclassOf
+	UGameplayStatics::PlaySound2D(GetWorld(), bulletSound);
+
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		PlayerController->PlayerCameraManager->StartCameraShake(cameraShake);
+	}
+	
+	auto anim = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	anim->PlayAttackAnim();
+	if (GetCharacterMovement()->MaxWalkSpeed > 300)
+	{
+		anim->SetbShootAndRun(GetCharacterMovement()->MaxWalkSpeed > walkSpeed);
+	}
+	else
+	{
+		anim->SetbShootAndRun(false);
+	}
+	
+	
 	if (!bUsingSniperGun)
 	{
 		FTransform firePosition = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));

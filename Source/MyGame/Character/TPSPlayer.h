@@ -42,6 +42,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* ia_Jump;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* ia_Run;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* ia_Fire;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* ia_Change;
@@ -50,7 +52,9 @@ public:
 
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
-	float walkSpeed = 600;
+	float walkSpeed = 300;
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	float runSpeed = 600;
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	FVector direction;
 
@@ -68,10 +72,19 @@ public:
 	class UUserWidget* _sniperUI;
 	UPROPERTY(EditAnywhere, Category = BulletEffect)
 	TObjectPtr<class UNiagaraSystem> BulletEffectFactory;
+	
+
+	UPROPERTY(EditDefaultsOnly, Category = CameraMotion)
+	TSubclassOf<class UCameraShakeBase> cameraShake;
+
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+	class USoundBase* bulletSound;
+	
 
 	void Input_Look(const struct FInputActionValue& inputValue);
 	void Move(const struct FInputActionValue& inputValue);
 	void InputJump(const struct FInputActionValue& inputValue);
+	void InputRun(const struct FInputActionValue& inputValue);
 	void InputFire(const struct FInputActionValue& inputValue);
 	void ChangeToGun(const struct FInputActionValue& inputValue);
 	void SniperAim(const struct FInputActionValue& inputValue);
